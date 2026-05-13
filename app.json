@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "react-native-country-explorer",
-    "slug": "react-native-country-explorer",
+    "name": "Country Explorer",
+    "slug": "Country Explorer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
