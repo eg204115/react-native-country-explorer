@@ -15,14 +15,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { fetchCountryDetail } from '../api/services/countryService';
+import { formatPopulation, mapUnknownToErrorMessage } from '../features/countries';
 import { screen } from '../theme/screen';
 import type { CountryDetail } from '../types/countryDetail';
 import type { RootStackParamList } from '../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CountryDetails'>;
-
-const formatPopulation = (n: number): string =>
-  new Intl.NumberFormat().format(n);
 
 const formatArea = (km2: number): string =>
   `${new Intl.NumberFormat().format(Math.round(km2))} km²`;
@@ -73,11 +71,9 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
       const data = await fetchCountryDetail(cca3);
       setCountry(data);
       navigation.setOptions({ title: data.commonName });
-    } catch (e) {
+    } catch (caught: unknown) {
       setCountry(null);
-      setError(
-        e instanceof Error ? e.message : 'Could not load country details.',
-      );
+      setError(mapUnknownToErrorMessage(caught));
       navigation.setOptions({ title: countryName });
     } finally {
       setLoading(false);
