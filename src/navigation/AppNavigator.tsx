@@ -1,33 +1,46 @@
-import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import CountryListScreen from '../screens/CountryListScreen';
+import { useThemePreference } from '../context/ThemePreferenceContext';
 import CountryDetailsScreen from '../screens/CountryDetailsScreen';
-import { navigationTheme } from '../theme/navigationTheme';
-import { screen } from '../theme/screen';
+import CountryListScreen from '../screens/CountryListScreen';
 import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const headerStyle = {
-  backgroundColor: screen.card,
-  ...Platform.select({
-    ios: {
-      shadowColor: screen.shadow,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 4,
-    },
-    android: {
-      elevation: 2,
-    },
-    default: {},
-  }),
-};
+const AppNavigator = (): React.JSX.Element => {
+  const { navigationTheme, palette } = useThemePreference();
 
-const AppNavigator = () => {
+  const headerStyle = useMemo(
+    () => ({
+      backgroundColor: palette.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: palette.shadow,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 2,
+        },
+        default: {},
+      }),
+    }),
+    [palette],
+  );
+
+  const headerTitleStyle = useMemo(
+    () => ({
+      fontWeight: '600' as const,
+      fontSize: 18,
+      color: palette.text,
+    }),
+    [palette],
+  );
+
   return (
     <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator
@@ -35,9 +48,9 @@ const AppNavigator = () => {
         screenOptions={{
           headerStyle,
           headerShadowVisible: false,
-          headerTitleStyle: styles.headerTitle,
-          headerTintColor: screen.primary,
-          contentStyle: { backgroundColor: screen.bg },
+          headerTitleStyle,
+          headerTintColor: palette.primary,
+          contentStyle: { backgroundColor: palette.bg },
           animation: 'slide_from_right',
         }}
       >
@@ -59,11 +72,3 @@ const AppNavigator = () => {
 };
 
 export default AppNavigator;
-
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontWeight: '600',
-    fontSize: 18,
-    color: screen.text,
-  },
-});

@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { countryDetailLoadingStateStyles as styles } from './CountryDetailLoadingState.styles';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
+
+import { createCountryDetailLoadingStateStyles } from './CountryDetailLoadingState.styles';
 
 export interface CountryDetailLoadingStateProps {
   readonly primaryColor: string;
@@ -11,6 +13,12 @@ export interface CountryDetailLoadingStateProps {
 function CountryDetailLoadingStateComponent({
   primaryColor,
 }: CountryDetailLoadingStateProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailLoadingStateStyles(palette),
+    [palette],
+  );
+
   return (
     <View style={styles.screenFill}>
       <View style={styles.centered}>

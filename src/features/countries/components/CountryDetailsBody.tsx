@@ -1,16 +1,17 @@
 import React, { memo, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 import type { CountryDetail } from '../../../types/countryDetail';
+import { getCountryDetailDisplayStrings } from '../utils/countryDetailDisplay';
 import { formatArea } from '../utils/formatArea';
 import { formatPopulation } from '../utils/formatPopulation';
-import { getCountryDetailDisplayStrings } from '../utils/countryDetailDisplay';
 
 import { CountryDetailHero } from './CountryDetailHero';
 import { CountryDetailMapsLinks } from './CountryDetailMapsLinks';
 import { CountryDetailRow } from './CountryDetailRow';
 import { CountryDetailSectionCard } from './CountryDetailSectionCard';
-import { countryDetailsBodyStyles as styles } from './CountryDetailsBody.styles';
+import { createCountryDetailsBodyStyles } from './CountryDetailsBody.styles';
 
 export interface CountryDetailsBodyProps {
   readonly country: CountryDetail;
@@ -23,6 +24,12 @@ function CountryDetailsBodyComponent({
   paddingBottom,
   onOpenUrl,
 }: CountryDetailsBodyProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailsBodyStyles(palette),
+    [palette],
+  );
+
   const display = useMemo(
     () => getCountryDetailDisplayStrings(country),
     [country],

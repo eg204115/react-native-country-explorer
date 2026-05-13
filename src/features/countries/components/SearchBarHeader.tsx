@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 
-import { searchBarHeaderStyles as styles } from './SearchBarHeader.styles';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
+
+import { createSearchBarHeaderStyles } from './SearchBarHeader.styles';
 
 export interface SearchBarHeaderProps {
   readonly value: string;
@@ -17,6 +19,12 @@ function SearchBarHeaderComponent({
   onChangeText,
   placeholder = DEFAULT_PLACEHOLDER,
 }: SearchBarHeaderProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createSearchBarHeaderStyles(palette),
+    [palette],
+  );
+
   return (
     <View style={styles.searchWrap}>
       <Searchbar

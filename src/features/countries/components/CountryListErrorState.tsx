@@ -1,11 +1,11 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 
-import { screen } from '../../../theme/screen';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 
-import { countryListErrorStateStyles as styles } from './CountryListErrorState.styles';
+import { createCountryListErrorStateStyles } from './CountryListErrorState.styles';
 
 export interface CountryListErrorStateProps {
   readonly message: string;
@@ -16,6 +16,12 @@ function CountryListErrorStateComponent({
   message,
   onRetry,
 }: CountryListErrorStateProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryListErrorStateStyles(palette),
+    [palette],
+  );
+
   const handleRetry = useCallback(() => {
     onRetry();
   }, [onRetry]);
@@ -25,7 +31,7 @@ function CountryListErrorStateComponent({
       <MaterialCommunityIcons
         name="cloud-alert-outline"
         size={48}
-        color={screen.textMuted}
+        color={palette.textMuted}
         style={styles.stateIcon}
       />
       <Text variant="bodyLarge" style={styles.errorText}>

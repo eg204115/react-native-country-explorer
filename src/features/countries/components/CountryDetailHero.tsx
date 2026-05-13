@@ -1,10 +1,11 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Image, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 import type { CountryDetail } from '../../../types/countryDetail';
 
-import { countryDetailHeroStyles as styles } from './CountryDetailHero.styles';
+import { createCountryDetailHeroStyles } from './CountryDetailHero.styles';
 
 export interface CountryDetailHeroProps {
   readonly country: CountryDetail;
@@ -13,6 +14,12 @@ export interface CountryDetailHeroProps {
 function CountryDetailHeroComponent({
   country,
 }: CountryDetailHeroProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailHeroStyles(palette),
+    [palette],
+  );
+
   return (
     <View style={styles.heroCard}>
       <Image

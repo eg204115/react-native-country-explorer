@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { countryListLoadingStateStyles as styles } from './CountryListLoadingState.styles';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
+
+import { createCountryListLoadingStateStyles } from './CountryListLoadingState.styles';
 
 export interface CountryListLoadingStateProps {
   readonly primaryColor: string;
@@ -11,6 +13,12 @@ export interface CountryListLoadingStateProps {
 function CountryListLoadingStateComponent({
   primaryColor,
 }: CountryListLoadingStateProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryListLoadingStateStyles(palette),
+    [palette],
+  );
+
   return (
     <View style={styles.centered}>
       <ActivityIndicator size="large" color={primaryColor} />

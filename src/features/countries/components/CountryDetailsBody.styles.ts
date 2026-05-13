@@ -1,13 +1,15 @@
 import { StyleSheet } from 'react-native';
 
-import { screen } from '../../../theme/screen';
+import type { ScreenPalette } from '../../../theme/palette';
 
-export const countryDetailsBodyStyles = StyleSheet.create({
-  scrollRoot: {
-    flex: 1,
-    backgroundColor: screen.bg,
-  },
-  scrollContent: {
-    paddingTop: 8,
-  },
-});
+export function createCountryDetailsBodyStyles(palette: ScreenPalette) {
+  return StyleSheet.create({
+    scrollRoot: {
+      flex: 1,
+      backgroundColor: palette.bg,
+    },
+    scrollContent: {
+      paddingTop: 8,
+    },
+  });
+}

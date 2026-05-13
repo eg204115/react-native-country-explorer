@@ -1,13 +1,13 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 
-import { screen } from '../../../theme/screen';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 import type { Country } from '../../../types/country';
 import { formatPopulation } from '../utils/formatPopulation';
 
-import { countryListItemStyles as styles } from './CountryListItem.styles';
+import { createCountryListItemStyles } from './CountryListItem.styles';
 
 export interface CountryListItemProps {
   readonly country: Country;
@@ -18,6 +18,12 @@ function CountryListItemComponent({
   country,
   onPress,
 }: CountryListItemProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryListItemStyles(palette),
+    [palette],
+  );
+
   const handlePress = useCallback(() => {
     onPress(country);
   }, [country, onPress]);
@@ -26,12 +32,14 @@ function CountryListItemComponent({
     .filter(Boolean)
     .join(' · ');
 
+  const rippleColor = `${palette.primary}14`;
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${country.name}, view details`}
       onPress={handlePress}
-      android_ripple={{ color: '#2563EB14' }}
+      android_ripple={{ color: rippleColor }}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <Image
@@ -53,7 +61,7 @@ function CountryListItemComponent({
       <MaterialCommunityIcons
         name="chevron-right"
         size={22}
-        color={screen.textMuted}
+        color={palette.textMuted}
         style={styles.chevron}
         importantForAccessibility="no"
       />

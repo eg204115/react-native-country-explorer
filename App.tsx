@@ -3,16 +3,29 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import {
+  ThemePreferenceProvider,
+  useThemePreference,
+} from './src/context/ThemePreferenceContext';
 import AppNavigator from './src/navigation/AppNavigator';
-import { appTheme } from './src/theme/theme';
 
-export default function App() {
+function ThemedRoot(): React.JSX.Element {
+  const { paperTheme, colorScheme } = useThemePreference();
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <AppNavigator />
+    </PaperProvider>
+  );
+}
+
+export default function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={appTheme}>
-        <StatusBar style="dark" />
-        <AppNavigator />
-      </PaperProvider>
+      <ThemePreferenceProvider>
+        <ThemedRoot />
+      </ThemePreferenceProvider>
     </SafeAreaProvider>
   );
 }

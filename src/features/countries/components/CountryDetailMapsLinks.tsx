@@ -1,11 +1,11 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 
-import { screen } from '../../../theme/screen';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 
-import { countryDetailMapsLinksStyles as styles } from './CountryDetailMapsLinks.styles';
+import { createCountryDetailMapsLinksStyles } from './CountryDetailMapsLinks.styles';
 
 export interface CountryDetailMapsLinksProps {
   readonly googleMapsUrl: string | null;
@@ -18,6 +18,14 @@ function CountryDetailMapsLinksComponent({
   openStreetMapsUrl,
   onOpenUrl,
 }: CountryDetailMapsLinksProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailMapsLinksStyles(palette),
+    [palette],
+  );
+
+  const rippleMaps = `${palette.primary}18`;
+
   const onPressGoogle = useCallback(() => {
     if (googleMapsUrl) {
       onOpenUrl(googleMapsUrl);
@@ -39,12 +47,12 @@ function CountryDetailMapsLinksComponent({
             styles.linkRow,
             pressed && styles.linkRowPressed,
           ]}
-          android_ripple={{ color: '#2563EB18' }}
+          android_ripple={{ color: rippleMaps }}
         >
           <MaterialCommunityIcons
             name="map-search-outline"
             size={22}
-            color={screen.primary}
+            color={palette.primary}
             style={styles.linkIcon}
           />
           <Text variant="bodyLarge" style={styles.linkText}>
@@ -53,7 +61,7 @@ function CountryDetailMapsLinksComponent({
           <MaterialCommunityIcons
             name="open-in-new"
             size={18}
-            color={screen.textMuted}
+            color={palette.textMuted}
             style={styles.linkTrailing}
           />
         </Pressable>
@@ -65,12 +73,12 @@ function CountryDetailMapsLinksComponent({
             styles.linkRow,
             pressed && styles.linkRowPressed,
           ]}
-          android_ripple={{ color: '#2563EB18' }}
+          android_ripple={{ color: rippleMaps }}
         >
           <MaterialCommunityIcons
             name="map-outline"
             size={22}
-            color={screen.primary}
+            color={palette.primary}
             style={styles.linkIcon}
           />
           <Text variant="bodyLarge" style={styles.linkText}>
@@ -79,7 +87,7 @@ function CountryDetailMapsLinksComponent({
           <MaterialCommunityIcons
             name="open-in-new"
             size={18}
-            color={screen.textMuted}
+            color={palette.textMuted}
             style={styles.linkTrailing}
           />
         </Pressable>

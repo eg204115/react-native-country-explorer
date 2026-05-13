@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { countryDetailSectionCardStyles as styles } from './CountryDetailSectionCard.styles';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
+
+import { createCountryDetailSectionCardStyles } from './CountryDetailSectionCard.styles';
 
 export interface CountryDetailSectionCardProps {
   readonly title: string;
@@ -13,6 +15,12 @@ function CountryDetailSectionCardComponent({
   title,
   children,
 }: CountryDetailSectionCardProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailSectionCardStyles(palette),
+    [palette],
+  );
+
   return (
     <View style={styles.sectionCard}>
       <Text variant="titleMedium" style={styles.sectionTitle}>

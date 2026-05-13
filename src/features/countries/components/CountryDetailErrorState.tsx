@@ -1,11 +1,11 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 
-import { screen } from '../../../theme/screen';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 
-import { countryDetailErrorStateStyles as styles } from './CountryDetailErrorState.styles';
+import { createCountryDetailErrorStateStyles } from './CountryDetailErrorState.styles';
 
 export interface CountryDetailErrorStateProps {
   readonly message: string;
@@ -16,6 +16,12 @@ function CountryDetailErrorStateComponent({
   message,
   onRetry,
 }: CountryDetailErrorStateProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryDetailErrorStateStyles(palette),
+    [palette],
+  );
+
   const handleRetry = useCallback(() => {
     onRetry();
   }, [onRetry]);
@@ -26,7 +32,7 @@ function CountryDetailErrorStateComponent({
         <MaterialCommunityIcons
           name="map-marker-alert-outline"
           size={48}
-          color={screen.textMuted}
+          color={palette.textMuted}
           style={styles.stateIcon}
         />
         <Text variant="bodyLarge" style={styles.errorText}>

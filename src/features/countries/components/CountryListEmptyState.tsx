@@ -1,11 +1,11 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
 
-import { screen } from '../../../theme/screen';
+import { useThemePreference } from '../../../context/ThemePreferenceContext';
 
-import { countryListEmptyStateStyles as styles } from './CountryListEmptyState.styles';
+import { createCountryListEmptyStateStyles } from './CountryListEmptyState.styles';
 
 export type CountryListEmptyStateVariant = 'no-matches' | 'empty-data';
 
@@ -16,6 +16,12 @@ export interface CountryListEmptyStateProps {
 function CountryListEmptyStateComponent({
   variant,
 }: CountryListEmptyStateProps): React.JSX.Element {
+  const { palette } = useThemePreference();
+  const styles = useMemo(
+    () => createCountryListEmptyStateStyles(palette),
+    [palette],
+  );
+
   const title =
     variant === 'no-matches' ? 'No matches' : 'No data';
   const subtitle =
@@ -28,7 +34,7 @@ function CountryListEmptyStateComponent({
       <MaterialCommunityIcons
         name="earth-off"
         size={40}
-        color={screen.textMuted}
+        color={palette.textMuted}
         style={styles.stateIcon}
       />
       <Text variant="titleMedium" style={styles.emptyTitle}>

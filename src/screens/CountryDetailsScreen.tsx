@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect } from 'react';
 import { Linking } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { IconButton, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useThemePreference } from '../context/ThemePreferenceContext';
 import {
   CountryDetailErrorState,
   CountryDetailLoadingState,
@@ -11,15 +12,32 @@ import {
   useCountryDetail,
 } from '../features/countries';
 import type { RootStackParamList } from '../types/navigation';
-
 type Props = NativeStackScreenProps<RootStackParamList, 'CountryDetails'>;
 
 const CountryDetailsScreen = ({ navigation, route }: Props) => {
   const theme = useTheme();
+  const { palette, toggleColorScheme, colorScheme } = useThemePreference();
   const insets = useSafeAreaInsets();
   const { cca3, countryName } = route.params;
 
   const { country, loading, error, reload } = useCountryDetail(cca3);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon={colorScheme === 'dark' ? 'weather-sunny' : 'weather-night'}
+          iconColor={palette.primary}
+          onPress={toggleColorScheme}
+          accessibilityLabel={
+            colorScheme === 'dark'
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          }
+        />
+      ),
+    });
+  }, [navigation, toggleColorScheme, colorScheme, palette.primary]);
 
   useEffect(() => {
     if (country) {

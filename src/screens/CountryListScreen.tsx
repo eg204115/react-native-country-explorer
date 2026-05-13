@@ -1,9 +1,14 @@
-import React, { useCallback, useMemo } from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+} from 'react';
 import { FlatList, RefreshControl, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { IconButton, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useThemePreference } from '../context/ThemePreferenceContext';
 import {
   CountryListEmptyState,
   CountryListErrorState,
@@ -16,16 +21,39 @@ import {
 import type { Country } from '../types/country';
 import type { RootStackParamList } from '../types/navigation';
 
-import { styles } from './CountryListScreen.styles';
+import { createCountryListScreenStyles } from './CountryListScreen.styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CountryList'>;
 
 const CountryListScreen = ({ navigation }: Props) => {
   const theme = useTheme();
+  const { palette, toggleColorScheme, colorScheme } = useThemePreference();
   const insets = useSafeAreaInsets();
   const { countries, loading, refreshing, error, load } = useCountries();
   const { searchQuery, setSearchQuery, filteredCountries } =
     useCountrySearch(countries);
+
+  const styles = useMemo(
+    () => createCountryListScreenStyles(palette),
+    [palette],
+  );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon={colorScheme === 'dark' ? 'weather-sunny' : 'weather-night'}
+          iconColor={palette.primary}
+          onPress={toggleColorScheme}
+          accessibilityLabel={
+            colorScheme === 'dark'
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          }
+        />
+      ),
+    });
+  }, [navigation, toggleColorScheme, colorScheme, palette.primary]);
 
   const listBottomPad = 16 + insets.bottom;
 

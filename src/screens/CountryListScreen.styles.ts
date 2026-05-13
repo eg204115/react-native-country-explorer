@@ -1,21 +1,23 @@
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { screen } from '../theme/screen';
+import type { ScreenPalette } from '../theme/palette';
 
-export const styles = StyleSheet.create({
-  screenFill: {
-    flex: 1,
-    backgroundColor: screen.bg,
-  },
-  listRoot: {
-    flex: 1,
-    backgroundColor: screen.bg,
-  },
-  listContent: {
-    paddingTop: 4,
-  },
-  emptyList: {
-    flexGrow: 1,
-    backgroundColor: screen.bg,
-  },
-});
+export function createCountryListScreenStyles(palette: ScreenPalette) {
+  return StyleSheet.create({
+    screenFill: {
+      flex: 1,
+      backgroundColor: palette.bg,
+    },
+    listRoot: {
+      flex: 1,
+      backgroundColor: palette.bg,
+    },
+    listContent: {
+      paddingTop: 4,
+    },
+    emptyList: {
+      flexGrow: 1,
+      backgroundColor: palette.bg,
+    },
+  });
+}
