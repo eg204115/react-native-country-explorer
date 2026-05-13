@@ -65,13 +65,6 @@ const CountryListScreen = ({ navigation }: Props) => {
     void load('retry');
   }, [load]);
 
-  const listHeader = useMemo(
-    () => (
-      <SearchBarHeader value={searchQuery} onChangeText={setSearchQuery} />
-    ),
-    [searchQuery, setSearchQuery],
-  );
-
   const handleCountryPress = useCallback(
     (country: Country) => {
       navigation.navigate('CountryDetails', {
@@ -113,27 +106,29 @@ const CountryListScreen = ({ navigation }: Props) => {
   }
 
   return (
-    <FlatList
-      style={styles.listRoot}
-      data={filteredCountries}
-      keyExtractor={(item) => item.cca3}
-      renderItem={renderItem}
-      ListHeaderComponent={listHeader}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={[
-        filteredCountries.length === 0 ? styles.emptyList : styles.listContent,
-        { paddingBottom: listBottomPad },
-      ]}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.colors.primary}
-          colors={[theme.colors.primary]}
-        />
-      }
-      ListEmptyComponent={<CountryListEmptyState variant={emptyVariant} />}
-    />
+    <View style={styles.screenFill}>
+      <SearchBarHeader value={searchQuery} onChangeText={setSearchQuery} />
+      <FlatList
+        style={styles.listRoot}
+        data={filteredCountries}
+        keyExtractor={(item) => item.cca3}
+        renderItem={renderItem}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          filteredCountries.length === 0 ? styles.emptyList : styles.listContent,
+          { paddingBottom: listBottomPad },
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
+        ListEmptyComponent={<CountryListEmptyState variant={emptyVariant} />}
+      />
+    </View>
   );
 };
 
