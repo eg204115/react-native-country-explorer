@@ -57,6 +57,7 @@ const CountryListScreen = ({ navigation }: Props) => {
       <Pressable
         onPress={() =>
           navigation.navigate('CountryDetails', {
+            cca3: item.cca3,
             countryName: item.name,
           })
         }
