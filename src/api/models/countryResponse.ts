@@ -10,6 +10,8 @@ export interface CountryFlags {
 export interface CountryResponse {
   name: CountryName;
 
+  cca3: string;
+
   flags: CountryFlags;
 
   capital?: string[];

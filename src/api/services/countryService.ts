@@ -14,6 +14,8 @@ const mapCountryResponse = (
   return {
     name: country.name.common,
 
+    cca3: country.cca3,
+
     flag: country.flags.png,
 
     capital: country.capital?.[0] ?? null,

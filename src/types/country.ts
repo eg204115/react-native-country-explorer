@@ -1,6 +1,8 @@
 export interface Country {
   name: string;
 
+  cca3: string;
+
   flag: string;
 
   capital: string | null;

@@ -1,4 +1,4 @@
 export const ENDPOINTS = {
   ALL_COUNTRIES:
-    '/all?fields=name,flags,capital,population,region,subregion',
+    '/all?fields=name,cca3,flags,capital,population,region,subregion',
 };
