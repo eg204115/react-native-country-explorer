@@ -1,23 +1,44 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-const CountryDetailsScreen = () => {
+import type { RootStackParamList } from '../types/navigation';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'CountryDetails'>;
+
+const CountryDetailsScreen = ({ route }: Props) => {
+  const { countryName } = route.params;
+
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">
-        Country Details Screen
-      </Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.container}>
+        <Text variant="titleLarge" style={styles.title}>
+          {countryName}
+        </Text>
+        <Text variant="bodyMedium" style={styles.lead}>
+          Opened from the country list.
+        </Text>
+      </View>
+    </ScrollView>
   );
 };
 
 export default CountryDetailsScreen;
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 24,
+  },
+  title: {
+    marginBottom: 8,
+  },
+  lead: {
+    lineHeight: 22,
+    color: '#64748B',
   },
 });
