@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,7 +8,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Searchbar, Text } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { fetchCountries } from '../api/services/countryService';
@@ -20,8 +20,27 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CountryList'>;
 const formatPopulation = (n: number): string =>
   new Intl.NumberFormat().format(n);
 
+const matchesSearch = (country: Country, query: string): boolean => {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return true;
+  }
+
+  const haystack = [
+    country.name,
+    country.capital ?? '',
+    country.region,
+    country.subregion ?? '',
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  return haystack.includes(q);
+};
+
 const CountryListScreen = ({ navigation }: Props) => {
   const [countries, setCountries] = useState<Country[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +70,26 @@ const CountryListScreen = ({ navigation }: Props) => {
   const onRefresh = useCallback(() => {
     void loadCountries(true);
   }, [loadCountries]);
+
+  const filteredCountries = useMemo(
+    () => countries.filter((c) => matchesSearch(c, searchQuery)),
+    [countries, searchQuery],
+  );
+
+  const listHeader = useMemo(
+    () => (
+      <View style={styles.searchWrap}>
+        <Searchbar
+          placeholder="Search by name, capital, or region"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchbar}
+          inputStyle={styles.searchInput}
+        />
+      </View>
+    ),
+    [searchQuery],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Country }) => (
@@ -116,18 +155,24 @@ const CountryListScreen = ({ navigation }: Props) => {
 
   return (
     <FlatList
-      data={countries}
+      data={filteredCountries}
       keyExtractor={(item) => item.cca3}
       renderItem={renderItem}
+      ListHeaderComponent={listHeader}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={
-        countries.length === 0 ? styles.emptyList : styles.listContent
+        filteredCountries.length === 0 ? styles.emptyList : styles.listContent
       }
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListEmptyComponent={
         <View style={styles.centered}>
-          <Text variant="bodyLarge">No countries found.</Text>
+          <Text variant="bodyLarge">
+            {searchQuery.trim() && countries.length > 0
+              ? 'No countries match your search.'
+              : 'No countries found.'}
+          </Text>
         </View>
       }
     />
@@ -137,6 +182,19 @@ const CountryListScreen = ({ navigation }: Props) => {
 export default CountryListScreen;
 
 const styles = StyleSheet.create({
+  searchWrap: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  searchbar: {
+    elevation: 0,
+    backgroundColor: '#F1F5F9',
+  },
+  searchInput: {
+    minHeight: 0,
+  },
   listContent: {
     paddingVertical: 8,
   },
