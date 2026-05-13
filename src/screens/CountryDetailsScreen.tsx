@@ -3,15 +3,19 @@ import {
   ActivityIndicator,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Text, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { fetchCountryDetail } from '../api/services/countryService';
+import { screen } from '../theme/screen';
 import type { CountryDetail } from '../types/countryDetail';
 import type { RootStackParamList } from '../types/navigation';
 
@@ -38,7 +42,24 @@ const DetailRow = ({
   </View>
 );
 
+const SectionCard = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <View style={styles.sectionCard}>
+    <Text variant="titleMedium" style={styles.sectionTitle}>
+      {title}
+    </Text>
+    {children}
+  </View>
+);
+
 const CountryDetailsScreen = ({ navigation, route }: Props) => {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { cca3, countryName } = route.params;
 
   const [country, setCountry] = useState<CountryDetail | null>(null);
@@ -71,22 +92,38 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
     void Linking.openURL(url);
   }, []);
 
+  const scrollBottomPad = 24 + insets.bottom;
+
   if (loading && !country) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.hint}>Loading details…</Text>
+      <View style={[styles.centered, styles.screenFill]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text variant="bodyLarge" style={styles.hint}>
+          Loading details…
+        </Text>
       </View>
     );
   }
 
   if (error || !country) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, styles.screenFill]}>
+        <MaterialCommunityIcons
+          name="map-marker-alert-outline"
+          size={48}
+          color={screen.textMuted}
+          style={styles.stateIcon}
+        />
         <Text variant="bodyLarge" style={styles.errorText}>
           {error ?? 'Something went wrong.'}
         </Text>
-        <Pressable onPress={() => void loadDetail()} style={styles.retryButton}>
+        <Pressable
+          onPress={() => void loadDetail()}
+          style={({ pressed }) => [
+            styles.retryButton,
+            pressed && styles.retryButtonPressed,
+          ]}
+        >
           <Text variant="labelLarge" style={styles.retryLabel}>
             Retry
           </Text>
@@ -131,29 +168,37 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
       : '—';
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.hero}>
+    <ScrollView
+      style={styles.scrollRoot}
+      contentContainerStyle={[
+        styles.scrollContent,
+        { paddingBottom: scrollBottomPad },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.heroCard}>
         <Image
           source={{ uri: country.flagPng }}
           style={styles.flag}
-          accessibilityLabel={country.flagAlt ?? `Flag of ${country.commonName}`}
+          accessibilityLabel={
+            country.flagAlt ?? `Flag of ${country.commonName}`
+          }
           resizeMode="contain"
         />
         <Text variant="headlineSmall" style={styles.commonTitle}>
           {country.commonName}
         </Text>
-        <Text variant="titleMedium" style={styles.officialName}>
+        <Text variant="bodyLarge" style={styles.officialName}>
           {country.officialName}
         </Text>
-        <Text variant="labelLarge" style={styles.codeChip}>
-          {country.cca3}
-        </Text>
+        <View style={styles.codeChip}>
+          <Text variant="labelMedium" style={styles.codeChipText}>
+            {country.cca3}
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          Overview
-        </Text>
+      <SectionCard title="Overview">
         <DetailRow
           label="Population"
           value={formatPopulation(country.population)}
@@ -164,12 +209,9 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
         {country.subregion ? (
           <DetailRow label="Subregion" value={country.subregion} />
         ) : null}
-      </View>
+      </SectionCard>
 
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          People & economy
-        </Text>
+      <SectionCard title="People & economy">
         <DetailRow label="Languages" value={languagesText} />
         <DetailRow label="Currencies" value={currenciesText} />
         <DetailRow
@@ -177,43 +219,69 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
           value={country.callingCode ?? '—'}
         />
         <DetailRow label="Top-level domains" value={tldText} />
-      </View>
+      </SectionCard>
 
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          Geography
-        </Text>
+      <SectionCard title="Geography">
         <DetailRow label="Coordinates" value={coordsText} />
         <DetailRow label="Time zones" value={timezonesText} />
         <DetailRow label="Border countries (codes)" value={bordersText} />
-      </View>
+      </SectionCard>
 
       {(country.googleMapsUrl || country.openStreetMapsUrl) && (
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Maps
-          </Text>
+        <SectionCard title="Maps">
           {country.googleMapsUrl ? (
             <Pressable
               onPress={() => openUrl(country.googleMapsUrl!)}
-              style={styles.linkRow}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && styles.linkRowPressed,
+              ]}
+              android_ripple={{ color: '#2563EB18' }}
             >
-              <Text variant="bodyLarge" style={styles.link}>
-                Open in Google Maps
+              <MaterialCommunityIcons
+                name="map-search-outline"
+                size={22}
+                color={screen.primary}
+                style={styles.linkIcon}
+              />
+              <Text variant="bodyLarge" style={styles.linkText}>
+                Google Maps
               </Text>
+              <MaterialCommunityIcons
+                name="open-in-new"
+                size={18}
+                color={screen.textMuted}
+                style={styles.linkTrailing}
+              />
             </Pressable>
           ) : null}
           {country.openStreetMapsUrl ? (
             <Pressable
               onPress={() => openUrl(country.openStreetMapsUrl!)}
-              style={styles.linkRow}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && styles.linkRowPressed,
+              ]}
+              android_ripple={{ color: '#2563EB18' }}
             >
-              <Text variant="bodyLarge" style={styles.link}>
-                Open in OpenStreetMap
+              <MaterialCommunityIcons
+                name="map-outline"
+                size={22}
+                color={screen.primary}
+                style={styles.linkIcon}
+              />
+              <Text variant="bodyLarge" style={styles.linkText}>
+                OpenStreetMap
               </Text>
+              <MaterialCommunityIcons
+                name="open-in-new"
+                size={18}
+                color={screen.textMuted}
+                style={styles.linkTrailing}
+              />
             </Pressable>
           ) : null}
-        </View>
+        </SectionCard>
       )}
     </ScrollView>
   );
@@ -221,92 +289,160 @@ const CountryDetailsScreen = ({ navigation, route }: Props) => {
 
 export default CountryDetailsScreen;
 
+const cardShadow = Platform.select({
+  ios: {
+    shadowColor: screen.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+  },
+  android: { elevation: 3 },
+  default: {},
+});
+
 const styles = StyleSheet.create({
+  screenFill: {
+    flex: 1,
+    backgroundColor: screen.bg,
+  },
+  scrollRoot: {
+    flex: 1,
+    backgroundColor: screen.bg,
+  },
   scrollContent: {
-    paddingBottom: 32,
+    paddingTop: 8,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 28,
   },
   hint: {
-    marginTop: 12,
-    color: '#64748B',
+    marginTop: 16,
+    color: screen.textMuted,
+    textAlign: 'center',
   },
   errorText: {
     textAlign: 'center',
-    color: '#B91C1C',
+    color: screen.error,
+    marginTop: 12,
+    lineHeight: 22,
+  },
+  stateIcon: {
+    opacity: 0.85,
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
+    marginTop: 22,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    backgroundColor: screen.primary,
+    borderRadius: 12,
+  },
+  retryButtonPressed: {
+    opacity: 0.9,
   },
   retryLabel: {
     color: '#FFFFFF',
+    fontWeight: '600',
   },
-  hero: {
-    alignItems: 'center',
-    paddingHorizontal: 24,
+  heroCard: {
+    marginHorizontal: 16,
+    marginBottom: 4,
+    padding: 18,
     paddingTop: 16,
-    paddingBottom: 8,
+    alignItems: 'center',
+    backgroundColor: screen.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: screen.cardBorder,
+    ...cardShadow,
   },
   flag: {
     width: '100%',
-    maxWidth: 320,
-    height: 200,
-    marginBottom: 16,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 8,
+    maxWidth: 300,
+    height: 180,
+    marginBottom: 14,
+    backgroundColor: screen.divider,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: screen.cardBorder,
   },
   commonTitle: {
     textAlign: 'center',
+    color: screen.text,
+    fontWeight: '700',
   },
   officialName: {
     textAlign: 'center',
-    color: '#475569',
+    color: screen.textSubtle,
     marginTop: 8,
-    fontWeight: '400',
+    lineHeight: 24,
   },
   codeChip: {
-    marginTop: 12,
-    color: '#2563EB',
+    marginTop: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#DBEAFE',
+  },
+  codeChipText: {
+    color: '#1E40AF',
+    fontWeight: '600',
     letterSpacing: 1,
   },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2E8F0',
-    paddingTop: 20,
+  sectionCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: screen.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: screen.cardBorder,
+    ...cardShadow,
   },
   sectionTitle: {
-    marginBottom: 16,
-    color: '#0F172A',
+    marginBottom: 14,
+    color: screen.text,
+    fontWeight: '600',
   },
   detailBlock: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   detailLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '700',
+    color: screen.textMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
     marginBottom: 4,
   },
   detailValue: {
-    color: '#1E293B',
+    color: screen.text,
+    lineHeight: 24,
   },
   linkRow: {
-    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    marginBottom: 4,
+    borderRadius: 12,
   },
-  link: {
-    color: '#2563EB',
-    textDecorationLine: 'underline',
+  linkRowPressed: {
+    backgroundColor: '#F1F5F9',
+  },
+  linkIcon: {
+    marginRight: 12,
+  },
+  linkText: {
+    flex: 1,
+    color: screen.primary,
+    fontWeight: '600',
+  },
+  linkTrailing: {
+    marginLeft: 8,
   },
 });

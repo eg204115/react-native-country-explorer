@@ -3,15 +3,19 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from 'react-native';
-import { Searchbar, Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Searchbar, Text, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { fetchCountries } from '../api/services/countryService';
+import { screen } from '../theme/screen';
 import type { Country } from '../types/country';
 import type { RootStackParamList } from '../types/navigation';
 
@@ -39,11 +43,16 @@ const matchesSearch = (country: Country, query: string): boolean => {
 };
 
 const CountryListScreen = ({ navigation }: Props) => {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
   const [countries, setCountries] = useState<Country[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const listBottomPad = 16 + insets.bottom;
 
   const loadCountries = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -85,6 +94,8 @@ const CountryListScreen = ({ navigation }: Props) => {
           value={searchQuery}
           style={styles.searchbar}
           inputStyle={styles.searchInput}
+          elevation={0}
+          rippleColor="transparent"
         />
       </View>
     ),
@@ -100,6 +111,7 @@ const CountryListScreen = ({ navigation }: Props) => {
             countryName: item.name,
           })
         }
+        android_ripple={{ color: '#2563EB14' }}
         style={({ pressed }) => [
           styles.row,
           pressed && styles.rowPressed,
@@ -111,7 +123,7 @@ const CountryListScreen = ({ navigation }: Props) => {
           accessibilityLabel={`Flag of ${item.name}`}
         />
         <View style={styles.rowText}>
-          <Text variant="titleMedium" numberOfLines={1}>
+          <Text variant="titleMedium" style={styles.rowTitle} numberOfLines={1}>
             {item.name}
           </Text>
           <Text variant="bodySmall" style={styles.meta} numberOfLines={1}>
@@ -121,6 +133,12 @@ const CountryListScreen = ({ navigation }: Props) => {
             Pop. {formatPopulation(item.population)}
           </Text>
         </View>
+        <MaterialCommunityIcons
+          name="chevron-right"
+          size={22}
+          color={screen.textMuted}
+          style={styles.chevron}
+        />
       </Pressable>
     ),
     [navigation],
@@ -128,22 +146,33 @@ const CountryListScreen = ({ navigation }: Props) => {
 
   if (loading && countries.length === 0) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.hint}>Loading countries…</Text>
+      <View style={[styles.centered, styles.screenFill]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text variant="bodyLarge" style={styles.hint}>
+          Loading countries…
+        </Text>
       </View>
     );
   }
 
   if (error && countries.length === 0) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, styles.screenFill]}>
+        <MaterialCommunityIcons
+          name="cloud-alert-outline"
+          size={48}
+          color={screen.textMuted}
+          style={styles.stateIcon}
+        />
         <Text variant="bodyLarge" style={styles.errorText}>
           {error}
         </Text>
         <Pressable
           onPress={() => void loadCountries(false)}
-          style={styles.retryButton}
+          style={({ pressed }) => [
+            styles.retryButton,
+            pressed && styles.retryButtonPressed,
+          ]}
         >
           <Text variant="labelLarge" style={styles.retryLabel}>
             Retry
@@ -155,23 +184,41 @@ const CountryListScreen = ({ navigation }: Props) => {
 
   return (
     <FlatList
+      style={styles.listRoot}
       data={filteredCountries}
       keyExtractor={(item) => item.cca3}
       renderItem={renderItem}
       ListHeaderComponent={listHeader}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={
-        filteredCountries.length === 0 ? styles.emptyList : styles.listContent
-      }
+      contentContainerStyle={[
+        filteredCountries.length === 0 ? styles.emptyList : styles.listContent,
+        { paddingBottom: listBottomPad },
+      ]}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
       }
       ListEmptyComponent={
-        <View style={styles.centered}>
-          <Text variant="bodyLarge">
+        <View style={styles.emptyInner}>
+          <MaterialCommunityIcons
+            name="earth-off"
+            size={40}
+            color={screen.textMuted}
+            style={styles.stateIcon}
+          />
+          <Text variant="titleMedium" style={styles.emptyTitle}>
             {searchQuery.trim() && countries.length > 0
-              ? 'No countries match your search.'
-              : 'No countries found.'}
+              ? 'No matches'
+              : 'No data'}
+          </Text>
+          <Text variant="bodyMedium" style={styles.emptySubtitle}>
+            {searchQuery.trim() && countries.length > 0
+              ? 'Try a different spelling or a shorter search.'
+              : 'Pull down to refresh, or try again later.'}
           </Text>
         </View>
       }
@@ -182,76 +229,152 @@ const CountryListScreen = ({ navigation }: Props) => {
 export default CountryListScreen;
 
 const styles = StyleSheet.create({
+  screenFill: {
+    backgroundColor: screen.bg,
+  },
+  listRoot: {
+    flex: 1,
+    backgroundColor: screen.bg,
+  },
   searchWrap: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 4,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: screen.bg,
   },
   searchbar: {
+    borderRadius: 14,
     elevation: 0,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: screen.card,
+    borderWidth: 1,
+    borderColor: screen.cardBorder,
+    ...Platform.select({
+      ios: {
+        shadowColor: screen.shadow,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+      },
+      default: {},
+    }),
   },
   searchInput: {
     minHeight: 0,
+    fontSize: 16,
   },
   listContent: {
-    paddingVertical: 8,
+    paddingTop: 4,
   },
   emptyList: {
     flexGrow: 1,
+    backgroundColor: screen.bg,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: screen.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: screen.cardBorder,
+    ...Platform.select({
+      ios: {
+        shadowColor: screen.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {},
+    }),
   },
   rowPressed: {
-    backgroundColor: '#F1F5F9',
+    opacity: 0.92,
   },
   flag: {
     width: 56,
     height: 40,
-    borderRadius: 4,
-    backgroundColor: '#E2E8F0',
+    borderRadius: 6,
+    backgroundColor: screen.divider,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: screen.cardBorder,
   },
   rowText: {
     flex: 1,
     marginLeft: 14,
+    minWidth: 0,
+  },
+  rowTitle: {
+    color: screen.text,
+    fontWeight: '600',
   },
   meta: {
-    color: '#64748B',
+    color: screen.textMuted,
     marginTop: 2,
   },
   population: {
-    color: '#64748B',
+    color: screen.textMuted,
     marginTop: 4,
+  },
+  chevron: {
+    marginLeft: 4,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 28,
   },
   hint: {
-    marginTop: 12,
-    color: '#64748B',
+    marginTop: 16,
+    color: screen.textMuted,
+    textAlign: 'center',
   },
   errorText: {
     textAlign: 'center',
-    color: '#B91C1C',
+    color: screen.error,
+    marginTop: 12,
+    lineHeight: 22,
+  },
+  stateIcon: {
+    opacity: 0.85,
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
+    marginTop: 22,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    backgroundColor: screen.primary,
+    borderRadius: 12,
+  },
+  retryButtonPressed: {
+    opacity: 0.9,
   },
   retryLabel: {
     color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  emptyInner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 48,
+    minHeight: 280,
+  },
+  emptyTitle: {
+    marginTop: 12,
+    color: screen.text,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    marginTop: 8,
+    color: screen.textMuted,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
