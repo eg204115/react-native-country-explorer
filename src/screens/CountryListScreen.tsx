@@ -43,7 +43,7 @@ const CountryListScreen = ({ navigation }: Props) => {
       headerRight: () => (
         <IconButton
           icon={colorScheme === 'dark' ? 'weather-sunny' : 'weather-night'}
-          iconColor={palette.primary}
+          iconColor={colorScheme === 'dark' ? palette.primary : palette.shadow}
           onPress={toggleColorScheme}
           accessibilityLabel={
             colorScheme === 'dark'
@@ -77,9 +77,13 @@ const CountryListScreen = ({ navigation }: Props) => {
 
   const renderItem = useCallback(
     ({ item }: { item: Country }) => (
-      <CountryListItem country={item} onPress={handleCountryPress} />
+      <CountryListItem
+        country={item}
+        onPress={handleCountryPress}
+        themeKey={colorScheme}
+      />
     ),
-    [handleCountryPress],
+    [handleCountryPress, colorScheme],
   );
 
   const emptyVariant = useMemo(() => {
@@ -109,8 +113,10 @@ const CountryListScreen = ({ navigation }: Props) => {
     <View style={styles.screenFill}>
       <SearchBarHeader value={searchQuery} onChangeText={setSearchQuery} />
       <FlatList
+        key={`countries-${colorScheme}`}
         style={styles.listRoot}
         data={filteredCountries}
+        extraData={colorScheme}
         keyExtractor={(item) => item.cca3}
         renderItem={renderItem}
         keyboardShouldPersistTaps="handled"

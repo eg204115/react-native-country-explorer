@@ -1,9 +1,27 @@
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, type ImageStyle, type TextStyle, type ViewStyle } from 'react-native';
 
 import type { ScreenPalette } from '../../../theme/palette';
 
-export function createCountryListItemStyles(palette: ScreenPalette) {
-  return StyleSheet.create({
+interface CountryListItemStyles {
+  readonly row: ViewStyle;
+  readonly rowPressed: ViewStyle;
+  readonly flag: ImageStyle;
+  readonly rowText: ViewStyle;
+  readonly rowTitle: TextStyle;
+  readonly meta: TextStyle;
+  readonly population: TextStyle;
+  readonly chevron: ViewStyle;
+}
+
+const cache = new WeakMap<ScreenPalette, CountryListItemStyles>();
+
+export function getCountryListItemStyles(palette: ScreenPalette) {
+  const cached = cache.get(palette);
+  if (cached) {
+    return cached;
+  }
+
+  const styles = StyleSheet.create<CountryListItemStyles>({
     row: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -60,4 +78,7 @@ export function createCountryListItemStyles(palette: ScreenPalette) {
       marginLeft: 4,
     },
   });
+
+  cache.set(palette, styles);
+  return styles;
 }

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native-paper';
@@ -7,22 +7,21 @@ import { useThemePreference } from '../../../context/ThemePreferenceContext';
 import type { Country } from '../../../types/country';
 import { formatPopulation } from '../utils/formatPopulation';
 
-import { createCountryListItemStyles } from './CountryListItem.styles';
+import { getCountryListItemStyles } from './CountryListItem.styles';
 
 export interface CountryListItemProps {
   readonly country: Country;
   readonly onPress: (country: Country) => void;
+  readonly themeKey: 'light' | 'dark';
 }
 
 function CountryListItemComponent({
   country,
   onPress,
+  themeKey,
 }: CountryListItemProps): React.JSX.Element {
   const { palette } = useThemePreference();
-  const styles = useMemo(
-    () => createCountryListItemStyles(palette),
-    [palette],
-  );
+  const styles = getCountryListItemStyles(palette);
 
   const handlePress = useCallback(() => {
     onPress(country);
@@ -81,7 +80,8 @@ function areCountryListItemPropsEqual(
     prev.country.region === next.country.region &&
     prev.country.subregion === next.country.subregion &&
     prev.country.population === next.country.population &&
-    prev.onPress === next.onPress
+    prev.onPress === next.onPress &&
+    prev.themeKey === next.themeKey
   );
 }
 
